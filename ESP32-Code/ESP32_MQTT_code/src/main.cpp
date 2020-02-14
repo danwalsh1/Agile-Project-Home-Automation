@@ -15,8 +15,16 @@
 WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
+
+
+
 long lastMsgTimer = 0;
-const int onboardLED = 2; // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
+const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
+const int switch1 = 22;         // GPIO22 (D22) on the DOIT-ESP32-DevKitV1
+const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
+const int extLEDRed = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
+const int extLEDGreen = 23;      // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
+const int extLEDBlue = 21;      // GPIO21 (D21) on the DOIT-ESP32-DevKitV1
 
 void blinkLED(int times) {
     for (int i = 0; i < times; i++) {
@@ -67,8 +75,11 @@ void mqttConnect() {
 
 void setup() {
     pinMode(onboardLED, OUTPUT);
-    pinMode(2, INPUT);
-    pinMode(5, INPUT);
+    pinMode(switch1, INPUT);
+    pinMode(switch2, INPUT);
+    pinMode(extLEDRed, OUTPUT);
+    pinMode(extLEDGreen, OUTPUT);
+    pinMode(extLEDBlue, OUTPUT);
     Serial.begin(9600);
     Serial.println();
     Serial.println();
@@ -106,7 +117,23 @@ void setup() {
     mqttClient.setCallback(receivedCallback);
 }
 
+
+
+
 void loop() {
+    digitalWrite(extLEDRed, HIGH);
+    delay(500);
+    digitalWrite(extLEDRed, LOW);
+    delay(500);
+    digitalWrite(extLEDGreen, HIGH);
+    delay(500);
+    digitalWrite(extLEDGreen, LOW);
+    delay(500);
+    digitalWrite(extLEDBlue, HIGH);
+    delay(500);
+    digitalWrite(extLEDBlue, LOW);
+    delay(500);
+
     mqttConnect();
 
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
@@ -118,9 +145,9 @@ void loop() {
     if (now - lastMsgTimer > 5000) {
         lastMsgTimer = now;
         
-        //Getting button1 reading
+        // Getting button1 reading
         // just convert time stamp to a c-string and send as data:
-        String button1DataToSend = (String)digitalRead(2); // dataToSend could be a sensor reading instead
+        String button1DataToSend = (String)digitalRead(switch1); // dataToSend could be a sensor reading instead
         Serial.println();
         Serial.print("Publishing data:  ");
         Serial.println(button1DataToSend);
@@ -130,7 +157,7 @@ void loop() {
 
         //Getting button2 reading
         // just convert time stamp to a c-string and send as data:
-        String button2DataToSend = (String)digitalRead(18); // dataToSend could be a sensor reading instead
+        String button2DataToSend = (String)digitalRead(switch2); // dataToSend could be a sensor reading instead
         Serial.println();
         Serial.print("Publishing data:  ");
         Serial.println(button2DataToSend);
@@ -139,4 +166,6 @@ void loop() {
         
     }
 }
+
+
 
