@@ -139,7 +139,7 @@ void loop() {
         // just convert time stamp to a c-string and send as data:
         String button1DataToSend = (String)digitalRead(switch1); // dataToSend could be a sensor reading instead
         Serial.println();
-        Serial.print("Publishing data:  ");
+        Serial.print(                                     "Publishing data:  ");
         Serial.println(button1DataToSend);
         blinkLED(1);
         mqttClient.publish((MQTT_TOPIC_NAME + "/button1").c_str(), button1DataToSend.c_str());
