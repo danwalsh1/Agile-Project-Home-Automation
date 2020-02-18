@@ -28,6 +28,8 @@ const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int freq = 5000;
 const int ledChannel = 0;
 const int resolution = 8;
+int dutyCycle = 0;
+std::string receivedData = "";
 
 void blinkLED(int times) {
     for (int i = 0; i < times; i++) {
@@ -44,8 +46,21 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
     Serial.print(topic);
     Serial.print("  Message reads:  ");
     for (int i = 0; i < length; i++) {
+        receivedData = receivedData + (char)payload[i];
         Serial.print((char)payload[i]);
     }
+    Serial.println("topic contains: ");
+    Serial.println(topic);
+    Serial.println("ReceivedData contains: ");
+    Serial.println(receivedData.c_str());
+
+    if(topic ==  "302CEM/lion/esp32/test")
+        if(receivedData == "128")
+        {
+            dutyCycle = 128;
+            ledcWrite(ledChannel, dutyCycle);
+        }
+    receivedData = "";
     Serial.println();
     blinkLED(2);
 }
@@ -127,6 +142,26 @@ void setup() {
 
 
 void loop() {
+    /*
+    Switch activated LED
+    if(digitalRead(switch1) == LOW && digitalRead(switch2) == LOW)
+    {
+        dutyCycle = 0;
+        ledcWrite(ledChannel, dutyCycle);
+    }
+    else if(digitalRead(switch1) == HIGH && digitalRead(switch2) == HIGH)
+    {
+        dutyCycle = 128;
+        ledcWrite(ledChannel, dutyCycle);
+    }
+    else if(digitalRead(switch1) == HIGH || digitalRead(switch2) == HIGH)
+    {
+        dutyCycle = 64;
+        ledcWrite(ledChannel, dutyCycle);
+    }
+    */
+    /*
+    Dimmable LED
     // increase the LED brightness
     for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
         // changing the LED brightness with PWM
@@ -139,7 +174,7 @@ void loop() {
         // changing the LED brightness with PWM
         ledcWrite(ledChannel, dutyCycle);   
         delay(15);
-    }
+    }*/
 
     mqttConnect();
 
@@ -156,7 +191,7 @@ void loop() {
         // just convert time stamp to a c-string and send as data:
         String button1DataToSend = (String)digitalRead(switch1); // dataToSend could be a sensor reading instead
         Serial.println();
-        Serial.print(                                     "Publishing data:  ");
+        Serial.print("Publishing data:  ");
         Serial.println(button1DataToSend);
         blinkLED(1);
         mqttClient.publish((MQTT_TOPIC_NAME + "/button1").c_str(), button1DataToSend.c_str());
@@ -170,6 +205,15 @@ void loop() {
         Serial.println(button2DataToSend);
         blinkLED(1);
         mqttClient.publish((MQTT_TOPIC_NAME + "/button2").c_str(), button2DataToSend.c_str());
+
+        //  Getting singleLED reading
+        // just convert time stamp to a c-string and send as data:
+        String singleLedDataToSend = (String)dutyCycle; // dataToSend could be a sensor reading instead
+        Serial.println();
+        Serial.print("Publishing data:  ");
+        Serial.println(singleLedDataToSend);
+        blinkLED(1);
+        mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), singleLedDataToSend.c_str());
 
         
         
