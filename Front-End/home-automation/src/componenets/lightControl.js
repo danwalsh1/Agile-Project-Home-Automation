@@ -13,6 +13,11 @@ class LightControl extends React.Component{
     render() {
         return (
             <div className='lightControl'>
+                <Card style={{width: '18rem'}}>
+                    <Card.Body>
+                        <Card.Title>LIGHT NAME</Card.Title>
+                    </Card.Body>
+                </Card>
             </div>
         )
     }
