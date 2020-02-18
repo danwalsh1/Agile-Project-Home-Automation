@@ -24,6 +24,11 @@ const int switch1 = 22;         // GPIO22 (D22) on the DOIT-ESP32-DevKitV1
 const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 
+// setting PWM properties
+const int freq = 5000;
+const int ledChannel = 0;
+const int resolution = 8;
+
 void blinkLED(int times) {
     for (int i = 0; i < times; i++) {
         digitalWrite(onboardLED, HIGH);
@@ -75,9 +80,12 @@ void setup() {
     pinMode(onboardLED, OUTPUT);
     pinMode(switch1, INPUT);
     pinMode(switch2, INPUT);
-    pinMode(singleLED, OUTPUT);
-    pinMode(extLEDGreen, OUTPUT);
-    pinMode(extLEDBlue, OUTPUT);
+
+    // configure LED PWM functionalitites
+    ledcSetup(ledChannel, freq, resolution);
+    // attach the channel to the GPIO to be controlled
+    ledcAttachPin(singleLED, ledChannel);
+
     Serial.begin(9600);
     Serial.println();
     Serial.println();
@@ -119,10 +127,19 @@ void setup() {
 
 
 void loop() {
-    digitalWrite(singleLED, HIGH);
-    delay(500);
-    digitalWrite(singleLED, LOW);
-    delay(500);
+    // increase the LED brightness
+    for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
+        // changing the LED brightness with PWM
+        ledcWrite(ledChannel, dutyCycle);
+        delay(15);
+    }
+
+    // decrease the LED brightness
+    for(int dutyCycle = 255; dutyCycle >= 0; dutyCycle--){
+        // changing the LED brightness with PWM
+        ledcWrite(ledChannel, dutyCycle);   
+        delay(15);
+    }
 
     mqttConnect();
 
