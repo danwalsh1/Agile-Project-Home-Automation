@@ -1,3 +1,7 @@
 1. Open CMD
 2. Type next command:
-"C:\Program Files\mosquitto\mosquitto_sub.exe" -v -h mqtt.coventry.ac.uk --cafile "C:\Users\santarod\Documents\Agile-git\Agile-Module\MQTT_win_cert\mqtt.crt" -p 8883  -u 302CEM -P n3fXXFZrjw -t 302CEM/lion/#
+    2.a Subsriber:
+    "C:\Program Files\mosquitto\mosquitto_sub.exe" -v -h mqtt.coventry.ac.uk --cafile "C:\Users\santarod\Desktop\mqtt.crt" -p 8883  -u 302CEM -P n3fXXFZrjw -t 302CEM/lion/#
+    
+    2.b Publisher:
+    "C:\Program Files\mosquitto\mosquitto_pub.exe" -h mqtt.coventry.ac.uk --cafile "C:\Users\santarod\Desktop\mqtt.crt" -p 8883 -u 302CEM -P n3fXXFZrjw -t 302CEM/lion/test  -m "hello world, my name is dimmi" 
