@@ -46,21 +46,19 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
     Serial.print(topic);
     Serial.print("  Message reads:  ");
     for (int i = 0; i < length; i++) {
+        // Put data into a string, display in serial char by char
         receivedData = receivedData + (char)payload[i];
         Serial.print((char)payload[i]);
     }
-    Serial.println("topic contains: ");
-    Serial.println(topic);
-    Serial.println("ReceivedData contains: ");
-    Serial.println(receivedData.c_str());
 
-    if(topic ==  "302CEM/lion/esp32/test")
-        if(receivedData == "128")
-        {
-            dutyCycle = 128;
-            ledcWrite(ledChannel, dutyCycle);
-        }
-    receivedData = "";
+    // Compare topic name
+    if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0)
+    {
+        // Assign value to the LED PWM signal (range 0-255)
+        ledcWrite(ledChannel, atoi(receivedData.c_str()));
+    }
+    // Clean up the variable
+    receivedData="";
     Serial.println();
     blinkLED(2);
 }
