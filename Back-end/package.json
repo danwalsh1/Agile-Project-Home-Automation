@@ -1,0 +1,19 @@
+{
+  "name": "nodejs-pract",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.8.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-route": "^3.2.0",
+    "koa-router": "^7.4.0",
+    "koa-websocket": "^6.0.0",
+    "mqtt": "^3.0.0"
+  }
+}
