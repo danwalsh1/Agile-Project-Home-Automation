@@ -22,9 +22,7 @@ long lastMsgTimer = 0;
 const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 22;         // GPIO22 (D22) on the DOIT-ESP32-DevKitV1
 const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
-const int extLEDRed = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
-const int extLEDGreen = 23;      // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
-const int extLEDBlue = 21;      // GPIO21 (D21) on the DOIT-ESP32-DevKitV1
+const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 
 void blinkLED(int times) {
     for (int i = 0; i < times; i++) {
@@ -77,7 +75,7 @@ void setup() {
     pinMode(onboardLED, OUTPUT);
     pinMode(switch1, INPUT);
     pinMode(switch2, INPUT);
-    pinMode(extLEDRed, OUTPUT);
+    pinMode(singleLED, OUTPUT);
     pinMode(extLEDGreen, OUTPUT);
     pinMode(extLEDBlue, OUTPUT);
     Serial.begin(9600);
@@ -121,17 +119,9 @@ void setup() {
 
 
 void loop() {
-    digitalWrite(extLEDRed, HIGH);
+    digitalWrite(singleLED, HIGH);
     delay(500);
-    digitalWrite(extLEDRed, LOW);
-    delay(500);
-    digitalWrite(extLEDGreen, HIGH);
-    delay(500);
-    digitalWrite(extLEDGreen, LOW);
-    delay(500);
-    digitalWrite(extLEDBlue, HIGH);
-    delay(500);
-    digitalWrite(extLEDBlue, LOW);
+    digitalWrite(singleLED, LOW);
     delay(500);
 
     mqttConnect();
@@ -163,6 +153,8 @@ void loop() {
         Serial.println(button2DataToSend);
         blinkLED(1);
         mqttClient.publish((MQTT_TOPIC_NAME + "/button2").c_str(), button2DataToSend.c_str());
+
+        
         
     }
 }
