@@ -16,7 +16,7 @@ const port = 8888
 
 
 client.on('connect', function() {
-  client.subscribe('302CEM/lion/', function(err) {
+  client.subscribe('302CEM/lion/#', function(err) {
     if(err) {
       console.log(err);
     }else{
@@ -67,7 +67,8 @@ app.ws.use(function(ctx, next) {
   // return `next` to pass the context (ctx) on to the next ws middleware
   return next(ctx);
 });
- 
+
+
 // Using routes
 app.ws.use(route.all('/live', function (ctx) {
   // 'ctx' is the regular koa context created from the 'ws' onConnection 'socket.upgradeReq' object.
@@ -75,7 +76,7 @@ app.ws.use(route.all('/live', function (ctx) {
   client.on('message', function(topic, message) {
     // Finally working - please DO NOT CHANGE!
     ctx.websocket.send(message.toString());
-    console.log(`Topic: ${topic} Message: ${message}`);
+    console.log(`[Socket] Topic: ${topic} Message: ${message}`);
   });
 }));
  
