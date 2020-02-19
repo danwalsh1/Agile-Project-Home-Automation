@@ -60,10 +60,6 @@ client.on('published', (packet)=>{
 
     }
   })
-
-//client.on('message', (topic, payload) => {
-//  console.log(`Topic: ${topic} Message: ${payload}`);
-//});
  
 // Regular middleware
 // Note it's app.ws.use and not app.use
@@ -74,9 +70,10 @@ app.ws.use(function(ctx, next) {
  
 // Using routes
 app.ws.use(route.all('/live', function (ctx) {
-  // `ctx` is the regular koa context created from the `ws` onConnection `socket.upgradeReq` object.
-  // the websocket is added to the context on `ctx.websocket`.
+  // 'ctx' is the regular koa context created from the 'ws' onConnection 'socket.upgradeReq' object.
+  // the websocket is added to the context on 'ctx.websocket'.
   client.on('message', function(topic, message) {
+    // Finally working - please DO NOT CHANGE!
     ctx.websocket.send(message.toString());
     console.log(`Topic: ${topic} Message: ${message}`);
   });
