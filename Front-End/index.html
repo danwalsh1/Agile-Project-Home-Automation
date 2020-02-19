@@ -24,6 +24,33 @@
 		<!-- Bootstrap JS, JQuery JS, Popper JS -->
 		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+		
+		<script type="text/javascript">
+			let socket = new WebSocket("ws://localhost:8888/live");
+
+			socket.onopen = function(e){
+				console.log("Connection established");
+			}
+
+			socket.onmessage = function(e){
+				console.log("Message Received: " + e.data);
+			}
+
+			socket.onclose = function(e){
+				if(e.wasClean){
+					console.log("Connection closed cleanly!");
+					console.log("Reason: " + e.reason);
+					console.log("Code: " + e.code);
+				}else{
+					console.log("Connection died!");
+				}
+			}
+
+			socket.onerror = function(e){
+				console.log("Error: " + e.message);
+			}
+		</script>
 	</body>
 </html>
+
