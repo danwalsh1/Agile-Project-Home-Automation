@@ -19,23 +19,25 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-12">
-					<div class="card" style="width: 18rem;">
-						<div class="card-body" style="text-align: center;">
-							<h5 class="card-title">LIGHT NAME</h5>
-							<form>
-								<div class="form-group">
-									<table>
-										<tr>
-											<td style="padding-right: 5px;"><i class="fa fa-moon-o" aria-hidden="true"></i></td>
-											<td><input type="range" class="custom-range" min="0" max="100" id="lightControlName" value="0" onchange="onLightChange('lightControlName')"></td>
-											<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
-										</tr>
-									</table>
-								</div>
-							</form>
+				<div class="col-12" id="control-container">
+					<template id="lightControlTemplate">
+						<div class="card" style="width: 18rem;">
+							<div class="card-body" style="text-align: center;">
+								<h5 class="card-title automation-title"></h5>
+								<form>
+									<div class="form-group">
+										<table>
+											<tr>
+												<td style="padding-right: 5px;"><i class="fa fa-moon-o" aria-hidden="true"></i></td>
+												<td><input type="range" class="custom-range automation-control" min="0" max="100" value="0"></td>
+												<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
+											</tr>
+										</table>
+									</div>
+								</form>
+							</div>
 						</div>
-					</div>
+					</template>
 				</div>
 			</div>
 			<div class="row">
@@ -48,6 +50,23 @@
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 		
 		<script type="text/javascript">
+			let lightTemplate = document.querySelector('#lightControlTemplate');
+			let controlContainer = document.querySelector('#control-container');
+			// For testing
+
+			// Clone the template
+			let clone = lightTemplate.content.cloneNode(true);
+			let cloneHeading = clone.querySelector(".automation-title");
+			let cloneControl = clone.querySelector(".automation-control");
+
+			cloneHeading.textContent = "First Light";
+			cloneControl.id = "firstLight"
+			cloneControl.onchange = function(){onLightChange("firstLight");};
+
+			controlContainer.appendChild(clone);
+
+			// End of test code
+
 			let socket = new WebSocket("ws://localhost:8888/live");
 
 			socket.onopen = function(e){
