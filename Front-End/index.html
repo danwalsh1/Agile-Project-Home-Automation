@@ -52,20 +52,85 @@
 		<script type="text/javascript">
 			let lightTemplate = document.querySelector('#lightControlTemplate');
 			let controlContainer = document.querySelector('#control-container');
-			// For testing
 
-			// Clone the template
-			let clone = lightTemplate.content.cloneNode(true);
-			let cloneHeading = clone.querySelector(".automation-title");
-			let cloneControl = clone.querySelector(".automation-control");
+			let currentControls = {
+				"lights":[]
+			};
 
-			cloneHeading.textContent = "First Light";
-			cloneControl.id = "firstLight"
-			cloneControl.onchange = function(){onLightChange("firstLight");};
+			/*
+			 *  Give a JSON object from MQTT
+			 *  Returns true if the given Control object is not currently stored in one of the control arrays.
+			 *  Else, returns false.
+			 */
+			function isControlNew(controlObject){
+				if(controlObject.type == "lights"){
+					if(currentControls.lights.includes(controlObject.name)){
+						return false;
+					}else{
+						return true;
+					}
+				}
+			}
 
-			controlContainer.appendChild(clone);
+			/*
+			 *  Give a JSON object from MQTT
+			 *  Will update the control interface with the information from the MQTT message object
+			 *
+			 *  MAY NOT BE NEEDED
+			 */
+			function updateControl(controlObject){
+				if(controlObject.type == "lights"){
+					let controlUI = document.getElementById(controlObject.name);
+					controlUI.value = controlObject.value;
+				}
+			}
 
-			// End of test code
+			/*
+			 *  Give a JSON object from MQTT
+			 *  Will add a new control to the UI for the given control object from MQTT
+			 */
+			function addNewControl(controlObject){
+				if(controlObject.type == "lights"){
+					let clone = lightTemplate.content.cloneNode(true);
+					let cloneHeading = clone.querySelector(".automation-title");
+					let cloneControl = clone.querySelector(".automation-control");
+
+					cloneHeading.textContent = controlObject.name;
+					cloneControl.id = controlObject.name;
+					cloneControl.onchange = function(){onLightChange(controlObject.name);};
+					cloneControl.value = controlObject.value;
+
+					controlContainer.appendChild(clone);
+
+					currentControls.lights.push(controlObject.name);
+				}
+			}
+
+			/*
+			 *  Give a JSON object from MQTT
+			 *  Run this to automatically deal with adding new controls or updating current ones
+			 */
+			function handleControlData(controlObject){
+				if(isControlNew(controlObject)){
+					// A new control UI is need
+					addNewControl(controlObject);
+				}else{
+					// Update the current UI (don't think this is currently needed)
+					//updateControl(controlObject);
+				}
+			}
+
+			// For testing ************************************************ 
+
+			let testJSON = {
+				"name":"kitchen",
+				"type":"lights",
+				"value":"48"
+			};
+
+			handleControlData(testJSON);
+
+			// End of test code *******************************************
 
 			let socket = new WebSocket("ws://localhost:8888/live");
 
@@ -75,6 +140,10 @@
 
 			socket.onmessage = function(e){
 				console.log("Message Received: " + e.data);
+				/* 
+				 *  Message should be JSON with the following format:
+				 *  Type, name, value
+				 */
 			}
 
 			socket.onclose = function(e){
