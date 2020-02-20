@@ -120,6 +120,24 @@
 				}
 			}
 
+			function isJSON(data){
+				if(typeof data !== "string"){
+					data = JSON.stringify(data);
+				}
+
+				try{
+					data = JSON.parse(data);
+				}catch(e){
+					return false;
+				}
+
+				if(typeof data === "object" && data !== null){
+					return true;
+				}else{
+					return false;
+				}
+			}
+
 			// For testing ************************************************ 
 
 			let testJSON = {
@@ -128,7 +146,7 @@
 				"value":"48"
 			};
 
-			handleControlData(testJSON);
+			//handleControlData(testJSON);
 
 			// End of test code *******************************************
 
@@ -144,6 +162,9 @@
 				 *  Message should be JSON with the following format:
 				 *  Type, name, value
 				 */
+				if(isJSON(e.data)){
+					handleControlData(e.data);
+				}
 			}
 
 			socket.onclose = function(e){
