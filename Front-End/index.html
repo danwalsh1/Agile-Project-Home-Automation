@@ -163,7 +163,7 @@
 				 *  Type, name, value
 				 */
 				if(isJSON(e.data)){
-					handleControlData(e.data);
+					handleControlData(JSON.parse(e.data));
 				}
 			}
 
