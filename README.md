@@ -14,7 +14,7 @@ And awaiting input of JSON format:
 
 If JSON data going to have different fields and/or values, ESP32 skips such command and continues execution as per usual.
 
-NB change value of "0" to any on a scale from 0 to 100 in increments of 1.
+*NB change value of "0" to any on a scale from 0 to 100 in increments of 1.*
 
 
 
@@ -29,4 +29,4 @@ The format of publishing is JSON with fields and values of:
 	
 	{"name":"kitchen","type":"lights","value":"0"}
 
-NB value of "0" will depend on data received previously. Initially, value 0 is assigned
+*NB value of "0" will depend on data received previously. Initially, value 0 is assigned*
