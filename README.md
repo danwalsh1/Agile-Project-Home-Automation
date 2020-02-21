@@ -12,7 +12,7 @@ And awaiting input of JSON format:
 
 	{"name":"kitchen","type":"lights","value":"0"}
 
-If JSON data going to have different fields and/or values, ESP32 skips such command and continues execution as usual.
+If JSON data going to have different fields and/or values, ESP32 skips such command and continues execution as per usual.
 
 NB change value of "0" to any on a scale from 0 to 100 in increments of 1.
 
