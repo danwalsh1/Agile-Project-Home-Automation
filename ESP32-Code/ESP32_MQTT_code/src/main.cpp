@@ -50,14 +50,30 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         Serial.print((char)payload[i]);
     }
 
+    // Creating JSON buffer
     StaticJsonBuffer<200> jsonBuffer;
+
+    // Parse payload to be accessed through JsonObject
     JsonObject& root = jsonBuffer.parseObject((char*)payload);
+
+    // Test if parsing succeeds.
+    if (!root.success()) 
+    {
+        // Append this function if non-JSON data has to be processed
+        Serial.println();
+        Serial.println("parseObject() failed. Non JSON format data received");
+        return;
+    }
+    // Extract values to appropriate fields of arrays
     const char* name = root["name"];
     const char* type = root["type"];
     const char* value = root["value"];
 
-    int conversionTo128;
-    if(atoi(value) > 100)
+    // Value conversion to 0-127 to fit 7 bit led PWM resolution 
+    int conversionTo128=0;                      // This to be corrected to some kind of non-volatile memory access to reset on reboot
+
+    // Handling errornous input from JSON data
+    if(atoi(value) > 100 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
     {
         conversionTo128 = 100;
         Serial.println();
@@ -66,7 +82,7 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         brightness = conversionTo128;
     }
         
-    else if(atoi(value) < 0)
+    else if(atoi(value) < 0 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
     {
         conversionTo128 = 0;
         Serial.println();
@@ -74,7 +90,7 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         Serial.println(conversionTo128);
         brightness = conversionTo128;
     }
-    else
+    else if(strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
     {
         conversionTo128 = int(atoi(value) * 1.27);
         Serial.println();
@@ -83,16 +99,10 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         brightness = atoi(value);
     }
         
-
-
-    
-    
-    // Compare topic name
+    // Compare topic name and JSON received fields
     if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
-    {
         ledcWrite(ledChannel, conversionTo128);
-        
-    }
+
     Serial.println();
     blinkLED(2);
 }
