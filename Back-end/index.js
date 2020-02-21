@@ -40,26 +40,6 @@ db.connect(function(err) {
     console.log('Database Connected')
   }
 })
-
-client.on('published', (packet)=>{
-  message = packet.payload.toString()
-  console.log(message)
-  if(message.slice(0,1) != '{' && message.slice(0,4) != 'mqtt'){
-    const dbStat = 'insert into Light_History set?'
-    const data = {
-      message: message
-    }
-    db.query(dbStat, data, (error, output)=>{
-      if(error){
-        console.log(error)
-       } else {
-          console.log(output)
-        }
-        
-      })
-
-    }
-  })
  
 // Regular middleware
 // Note it's app.ws.use and not app.use
@@ -73,11 +53,28 @@ app.ws.use(function(ctx, next) {
 app.ws.use(route.all('/live', function (ctx) {
   // 'ctx' is the regular koa context created from the 'ws' onConnection 'socket.upgradeReq' object.
   // the websocket is added to the context on 'ctx.websocket'.
-  client.on('message', function(topic, message) {
     // Finally working - please DO NOT CHANGE!
+  client.on('message', function(topic, message) {
     ctx.websocket.send(message.toString());
-    console.log(`[Socket] Topic: ${topic} Message: ${message}`);
-  });
+      message = message.toString()
+      var data = JSON.parse(message)
+      console.log(message)
+        const dbStat = 'insert into Light_History (brightness) VALUES ( "'+data.value+'" )'
+            data = {
+          message: message
+        }
+        db.query(dbStat, data, (error, output)=>{
+          if(error){
+            console.log(error)
+           } else {
+            console.log(output)
+            }
+            
+          })
+    }) 
+
+  console.log(`[Socket] Topic: ${topic} Message: ${message}`);
+ 
 }));
  
 app.listen(8888);
