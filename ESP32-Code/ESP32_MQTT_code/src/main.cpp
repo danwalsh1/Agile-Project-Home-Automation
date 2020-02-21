@@ -11,15 +11,13 @@
 #include <PubSubClient.h>
 #include <stdio.h>
 #include <math.h>
+//#include "cJSON.c"
 #include "ArduinoJson.h"
 
 #include "mqttcert.h"
 
 WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
-
-
-
 
 long lastMsgTimer = 0;
 const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
@@ -31,8 +29,7 @@ const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int freq = 5000;
 const int ledChannel = 0;
 const int resolution = 7;
-int dutyCycle = 0;
-std::string receivedData = "";
+int brightness = 0;
 
 
 void blinkLED(int times) {
@@ -50,25 +47,52 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
     Serial.print(topic);
     Serial.print("  Message reads:  ");
     for (int i = 0; i < length; i++) {
-        // Put data into a string, display in serial char by char
-        receivedData = receivedData + (char)payload[i];
         Serial.print((char)payload[i]);
     }
 
-    //conversion from scale of 0-100 to 0-127
-    //sprintf(receivedData, "%d", int(atoi(receivedData.c_str())*1.257425));
-    //receivedData = int(atoi(receivedData.c_str())*1.257425);
-    //Serial.println("%s",receivedData);
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& root = jsonBuffer.parseObject((char*)payload);
+    const char* name = root["name"];
+    const char* type = root["type"];
+    const char* value = root["value"];
 
-    // Compare topic name
-    if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0)
+    int conversionTo128;
+    if(atoi(value) > 100)
     {
-        // Assign value to the LED PWM signal (range 0-127)
-        ledcWrite(ledChannel, atoi(receivedData.c_str()));
-        dutyCycle = atoi(receivedData.c_str());
+        conversionTo128 = 100;
+        Serial.println();
+        Serial.print("Entered value exceeding maximum value! Assigning value of: ");
+        Serial.println(conversionTo128);
+        brightness = conversionTo128;
     }
-    // Clean up the variable
-    receivedData="";
+        
+    else if(atoi(value) < 0)
+    {
+        conversionTo128 = 0;
+        Serial.println();
+        Serial.print("Entered value exceeding minimum value! Assigning value of: ");
+        Serial.println(conversionTo128);
+        brightness = conversionTo128;
+    }
+    else
+    {
+        conversionTo128 = int(atoi(value) * 1.27);
+        Serial.println();
+        Serial.print("Value after conversion is: ");
+        Serial.println(conversionTo128);
+        brightness = atoi(value);
+    }
+        
+
+
+    
+    
+    // Compare topic name
+    if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
+    {
+        ledcWrite(ledChannel, conversionTo128);
+        
+    }
     Serial.println();
     blinkLED(2);
 }
@@ -150,39 +174,6 @@ void setup() {
 
 
 void loop() {
-    /*
-    Switch activated LED
-    if(digitalRead(switch1) == LOW && digitalRead(switch2) == LOW)
-    {
-        dutyCycle = 0;
-        ledcWrite(ledChannel, dutyCycle);
-    }
-    else if(digitalRead(switch1) == HIGH && digitalRead(switch2) == HIGH)
-    {
-        dutyCycle = 128;
-        ledcWrite(ledChannel, dutyCycle);
-    }
-    else if(digitalRead(switch1) == HIGH || digitalRead(switch2) == HIGH)
-    {
-        dutyCycle = 64;
-        ledcWrite(ledChannel, dutyCycle);
-    }
-    */
-    /*
-    Dimmable LED
-    // increase the LED brightness
-    for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
-        // changing the LED brightness with PWM
-        ledcWrite(ledChannel, dutyCycle);
-        delay(15);
-    }
-
-    // decrease the LED brightness
-    for(int dutyCycle = 255; dutyCycle >= 0; dutyCycle--){
-        // changing the LED brightness with PWM
-        ledcWrite(ledChannel, dutyCycle);   
-        delay(15);
-    }*/
 
     mqttConnect();
 
@@ -217,21 +208,26 @@ void loop() {
         */
 
         //  Getting singleLED reading
-        // just convert time stamp to a c-string and send as data:
-        String singleLedDataToSend = (String)dutyCycle; // dataToSend could be a sensor reading instead
-        Serial.println();
-        Serial.print("Publishing data:  ");
-        Serial.println(singleLedDataToSend);
-        blinkLED(1);
-        //char JSONMessage[] ="{\"name\":\"kitchen\", \"type\": \"lights\", \"value\":\"0\"}";
+
 
         //mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), singleLedDataToSend.c_str());
-        mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), "{\"name\":\"kitchen\", \"type\": \"lights\", \"value\":\"50\"}");
+        //mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), "{\"name\":\"kitchen\", \"type\": \"lights\", \"value\":\"50\"}");
 
+        //  Getting singleLED reading
+        StaticJsonBuffer<200> jsonBuffer;
+        JsonObject& root = jsonBuffer.createObject();
+        root["name"] = "kitchen";
+        root["type"] = "lights";
+        root["value"] = (String)brightness;
+        char JSONmessageBuffer[100];
+        root.printTo(JSONmessageBuffer,sizeof(JSONmessageBuffer));
         
+        Serial.println();
+        Serial.print("Publishing data:  ");
+        Serial.println(JSONmessageBuffer);
+        // This prints:
+        // {"name":"kitchen","type":"lights","value":"%d"}, %d - valueof(singleLedDataToSend.c_str());
+        mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), JSONmessageBuffer);
         
     }
 }
-
-
-
