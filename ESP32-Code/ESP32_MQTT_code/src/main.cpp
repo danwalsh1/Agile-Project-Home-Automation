@@ -9,6 +9,9 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#include <stdio.h>
+#include <math.h>
+#include "ArduinoJson.h"
 
 #include "mqttcert.h"
 
@@ -27,9 +30,10 @@ const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 // setting PWM properties
 const int freq = 5000;
 const int ledChannel = 0;
-const int resolution = 8;
+const int resolution = 7;
 int dutyCycle = 0;
 std::string receivedData = "";
+
 
 void blinkLED(int times) {
     for (int i = 0; i < times; i++) {
@@ -51,11 +55,17 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         Serial.print((char)payload[i]);
     }
 
+    //conversion from scale of 0-100 to 0-127
+    //sprintf(receivedData, "%d", int(atoi(receivedData.c_str())*1.257425));
+    //receivedData = int(atoi(receivedData.c_str())*1.257425);
+    //Serial.println("%s",receivedData);
+
     // Compare topic name
     if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0)
     {
-        // Assign value to the LED PWM signal (range 0-255)
+        // Assign value to the LED PWM signal (range 0-127)
         ledcWrite(ledChannel, atoi(receivedData.c_str()));
+        dutyCycle = atoi(receivedData.c_str());
     }
     // Clean up the variable
     receivedData="";
@@ -185,6 +195,7 @@ void loop() {
     if (now - lastMsgTimer > 5000) {
         lastMsgTimer = now;
         
+        /*
         // Getting button1 reading
         // just convert time stamp to a c-string and send as data:
         String button1DataToSend = (String)digitalRead(switch1); // dataToSend could be a sensor reading instead
@@ -203,6 +214,7 @@ void loop() {
         Serial.println(button2DataToSend);
         blinkLED(1);
         mqttClient.publish((MQTT_TOPIC_NAME + "/button2").c_str(), button2DataToSend.c_str());
+        */
 
         //  Getting singleLED reading
         // just convert time stamp to a c-string and send as data:
@@ -211,7 +223,10 @@ void loop() {
         Serial.print("Publishing data:  ");
         Serial.println(singleLedDataToSend);
         blinkLED(1);
-        mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), singleLedDataToSend.c_str());
+        //char JSONMessage[] ="{\"name\":\"kitchen\", \"type\": \"lights\", \"value\":\"0\"}";
+
+        //mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), singleLedDataToSend.c_str());
+        mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), "{\"name\":\"kitchen\", \"type\": \"lights\", \"value\":\"50\"}");
 
         
         
