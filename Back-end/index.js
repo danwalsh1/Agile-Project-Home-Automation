@@ -53,9 +53,15 @@ app.ws.use(function(ctx, next) {
 app.ws.use(route.all('/live', function (ctx) {
   // 'ctx' is the regular koa context created from the 'ws' onConnection 'socket.upgradeReq' object.
   // the websocket is added to the context on 'ctx.websocket'.
+     ctx.websocket.on('message', function(message) {
+    // do something with the message from client
+        console.log(message);
+        client.publish('lights', message)
+    });
     // Finally working - please DO NOT CHANGE!
   client.on('message', function(topic, message) {
     ctx.websocket.send(message.toString());
+ 
       message = message.toString()
       var data = JSON.parse(message)
       console.log(message)
