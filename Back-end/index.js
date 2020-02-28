@@ -53,31 +53,32 @@ app.ws.use(function(ctx, next) {
 app.ws.use(route.all('/live', function (ctx) {
   // 'ctx' is the regular koa context created from the 'ws' onConnection 'socket.upgradeReq' object.
   // the websocket is added to the context on 'ctx.websocket'.
-     ctx.websocket.on('message', function(message) {
+  ctx.websocket.on('message', function(message) {
     // do something with the message from client
-        console.log(message);
-        client.publish('lights', message)
-    });
-    // Finally working - please DO NOT CHANGE!
+    console.log("sending to broker")
+    console.log(message);
+    client.publish('302CEM/lion/esp32/led_control', message)
+  });
+  
+  // Finally working - please DO NOT CHANGE!
   client.on('message', function(topic, message) {
     ctx.websocket.send(message.toString());
- 
-      message = message.toString()
-      var data = JSON.parse(message)
-      console.log(message)
-        const dbStat = 'insert into Light_History (brightness) VALUES ( "'+data.value+'" )'
-            data = {
-          message: message
-        }
-        db.query(dbStat, data, (error, output)=>{
-          if(error){
-            console.log(error)
-           } else {
-            console.log(output)
-            }
-            
-          })
-    }) 
+     
+    message = message.toString()
+    var data = JSON.parse(message)
+    console.log(message)
+    const dbStat = 'insert into Light_History (brightness) VALUES ( "'+data.value+'" )'
+    data = {
+      message: message
+    }
+    db.query(dbStat, data, (error, output)=>{
+      if(error){
+        console.log(error)
+      } else {
+        console.log(output)
+      }        
+    })
+  }) 
 
   console.log(`[Socket] Topic: ${topic} Message: ${message}`);
  
