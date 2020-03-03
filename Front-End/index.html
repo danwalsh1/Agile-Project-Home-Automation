@@ -44,7 +44,7 @@
 			</div>
 			<div class="row">
 			</div>
-			<div class="modal" tabindex="-1" role="dialog">
+			<div class="modal" tabindex="-1" id="usageModal" role="dialog">
 				<div class="modal-dialog" role="document">
 				  	<div class="modal-content">
 						<div class="modal-header">
@@ -76,6 +76,7 @@
 			 */
 			function loadModal(lightName){
 				console.log("Loading usage modal for " + lightName);
+				$("#usageModal").modal("show")
 			}
 		</script>
 		<script type="text/javascript">
