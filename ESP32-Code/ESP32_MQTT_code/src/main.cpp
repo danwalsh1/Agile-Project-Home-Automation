@@ -22,8 +22,12 @@ PubSubClient mqttClient(espClient);
 long lastMsgTimer = 0;
 const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 22;         // GPIO22 (D22) on the DOIT-ESP32-DevKitV1
-const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
+//const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
+const int pirSensor = 18;
+
+bool lightsOn;
+
 
 // setting PWM properties
 const int freq = 5000;
@@ -133,10 +137,20 @@ void mqttConnect() {
 }
 
 
+void IRAM_ATTR MovementDetected()
+{
+    Serial.println("Presence detected");
+
+    lightsOn = true;
+}
+
+
 void setup() {
     pinMode(onboardLED, OUTPUT);
     pinMode(switch1, INPUT);
-    pinMode(switch2, INPUT);
+    //pinMode(switch2, INPUT);
+    pinMode(pirSensor, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
@@ -190,12 +204,21 @@ void loop() {
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
 
+/* 
+     // PIR Sensor detecting
+        bool isDetected = digitalRead(pirSensor);
+        if (isDetected) {
+            Serial.println("Presence detected");
+        };
+        
+        delay(500);*/
+
     // we send a reading every 5 secs
     // we count until 5 secs reached to avoid blocking program (instead of using delay())
     long now = millis();
     if (now - lastMsgTimer > 5000) {
         lastMsgTimer = now;
-        
+
         /*
         // Getting button1 reading
         // just convert time stamp to a c-string and send as data:
