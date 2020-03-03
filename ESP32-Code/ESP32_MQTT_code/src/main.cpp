@@ -169,7 +169,7 @@ void setup() {
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
-    // attach the channel to the GPIO to be controlledkkkkk
+    // attach the channel to the GPIO to be controlled
     ledcAttachPin(singleLED, ledChannel);
 
     Serial.begin(9600);
