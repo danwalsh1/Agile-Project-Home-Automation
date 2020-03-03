@@ -33,6 +33,7 @@
 												<td><input type="range" class="custom-range automation-control" min="0" max="100" value="0"></td>
 												<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
 											</tr>
+											<button class="btn btn-primary usage-button" type="button">Usage Data</button>
 										</table>
 									</div>
 								</form>
@@ -69,7 +70,14 @@
 		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" crossorigin="anonymous"></script>
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-		
+		<script type="text/javascript">
+			/*
+			 *
+			 */
+			function loadModal(lightName){
+				console.log("Loading usage modal for " + lightName);
+			}
+		</script>
 		<script type="text/javascript">
 			let lightTemplate = document.querySelector('#lightControlTemplate');
 			let controlContainer = document.querySelector('#control-container');
@@ -115,7 +123,9 @@
 					let clone = lightTemplate.content.cloneNode(true);
 					let cloneHeading = clone.querySelector(".automation-title");
 					let cloneControl = clone.querySelector(".automation-control");
+					let cloneUsageButton = clone.querySelector(".usage-button");
 
+					cloneUsageButton.onclick = function(){loadModal(controlObject.name)};
 					cloneHeading.textContent = controlObject.name;
 					cloneControl.id = controlObject.name;
 					cloneControl.onchange = function(){onLightChange(controlObject.name);};
