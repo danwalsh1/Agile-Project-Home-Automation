@@ -140,10 +140,25 @@ void mqttConnect() {
 void IRAM_ATTR MovementDetected()
 {
     Serial.println("Presence detected");
-
-    lightsOn = true;
+    turnLightOn();
 }
 
+void noMotionDetected()
+{
+    turnLightOff()
+}
+
+void turnLightOn()
+{
+    brightness = 100;
+    ledcWrite(ledChannel, (int)(brightness*1.27));
+}
+
+void turnLightOff()
+{
+    brightness = 0;
+    ledcWrite(ledChannel, (int)(brightness*1.27));
+}
 
 void setup() {
     pinMode(onboardLED, OUTPUT);
@@ -154,7 +169,7 @@ void setup() {
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
-    // attach the channel to the GPIO to be controlled
+    // attach the channel to the GPIO to be controlledkkkkk
     ledcAttachPin(singleLED, ledChannel);
 
     Serial.begin(9600);
@@ -203,15 +218,6 @@ void loop() {
 
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
-
-/* 
-     // PIR Sensor detecting
-        bool isDetected = digitalRead(pirSensor);
-        if (isDetected) {
-            Serial.println("Presence detected");
-        };
-        
-        delay(500);*/
 
     // we send a reading every 5 secs
     // we count until 5 secs reached to avoid blocking program (instead of using delay())
