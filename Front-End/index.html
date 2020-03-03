@@ -207,8 +207,8 @@
 				let outputVal = document.getElementById(lightName).value
 				console.log(lightName + " : " + outputVal);
 				let output = {
-					"type":"light",
 					"name":lightName,
+					"type":"lights",
 					"value":outputVal
 				};
 				socket.send(JSON.stringify(output));
