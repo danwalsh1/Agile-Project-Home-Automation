@@ -33,6 +33,11 @@
 												<td><input type="range" class="custom-range automation-control" min="0" max="100" value="0"></td>
 												<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
 											</tr>
+											<tr>
+												<td style="padding-right: 5px;"><i class="fa fa-moon-o" aria-hidden="true"></i></td>
+												<td><input type="range" class="custom-range delay-control" min="0" max="100" value="0"></td>
+												<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
+											</tr>
 											<button class="btn btn-primary usage-button" type="button">Usage Data</button>
 										</table>
 									</div>
@@ -124,6 +129,7 @@
 					let clone = lightTemplate.content.cloneNode(true);
 					let cloneHeading = clone.querySelector(".automation-title");
 					let cloneControl = clone.querySelector(".automation-control");
+					let cloneDelayControl = clone.querySelector(".delay-control");
 					let cloneUsageButton = clone.querySelector(".usage-button");
 
 					cloneUsageButton.onclick = function(){loadModal(controlObject.name)};
@@ -131,6 +137,10 @@
 					cloneControl.id = controlObject.name;
 					cloneControl.onchange = function(){onLightChange(controlObject.name);};
 					cloneControl.value = controlObject.value;
+					cloneDelayControl.id = controlObject.name + "1";
+
+
+					cloneDelayControl.onchange = function(){onDelayChange(controlObject.name + "1")}
 
 					controlContainer.appendChild(clone);
 
@@ -223,6 +233,18 @@
 					"value":outputVal
 				};
 				socket.send(JSON.stringify(output));
+			}
+			function onDelayChange(lightName){
+				//let lightName = "lightControl";
+				let outputVal = document.getElementById(lightName).value
+				console.log(lightName + " [delay]: " + outputVal);
+				let output = {
+					"name":lightName,
+					"type":"lights",
+					"value":outputVal
+				};
+				socket.send(JSON.stringify(output));
+				
 			}
 		</script>
 	</body>
