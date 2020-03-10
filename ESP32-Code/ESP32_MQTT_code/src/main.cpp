@@ -22,10 +22,10 @@ PubSubClient mqttClient(espClient);
 long lastMsgTimer = 0;
 long lastSuccessfulLedMessage = 0;
 const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
-const int switch1 = 22;         // GPIO22 (D22) on the DOIT-ESP32-DevKitV1
+const int switch1 = 19;         // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
 //const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
-const int pirSensor = 18;
+const int pirSensor = 18;       // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
 
 bool lightsOn;
 
@@ -37,6 +37,8 @@ const int freq = 5000;
 const int ledChannel = 0;
 const int resolution = 7;
 int brightness = 0;
+
+void turnLightOn();
 
 
 void blinkLED(int times) {
@@ -173,17 +175,19 @@ void mqttConnect() {
     }
 }
 
-/*
+
 void IRAM_ATTR MovementDetected()
 {
     Serial.println("Presence detected");
     turnLightOn();
 }
 
-void noMotionDetected()
-{
-    turnLightOff()
+void IRAM_ATTR lightsOff(){
+    Serial.println("Turning light off. Button pressed");
+    brightness = 0;
+    ledcWrite(ledChannel, 0);
 }
+
 
 void turnLightOn()
 {
@@ -191,18 +195,10 @@ void turnLightOn()
     ledcWrite(ledChannel, (int)(brightness*1.27));
 }
 
-void turnLightOff()
-{
-    brightness = 0;
-    ledcWrite(ledChannel, (int)(brightness*1.27));
-}
-*/
+
 void setup() {
     pinMode(onboardLED, OUTPUT);
-    pinMode(switch1, INPUT);
-    //pinMode(switch2, INPUT);
-    //pinMode(pirSensor, INPUT_PULLUP);
-    //attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
+
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
@@ -225,6 +221,12 @@ void setup() {
         delay(500);
         Serial.print(".");
     }
+    
+    pinMode(switch1, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(switch1), lightsOff, FALLING);
+    //pinMode(switch2, INPUT);
+    pinMode(pirSensor, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
 
     Serial.println("");
     Serial.println("WiFi connected");
@@ -254,14 +256,13 @@ void setup() {
 
 
 void loop() {
-
     mqttConnect();
 
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
 
-    // we send a reading every 5 secs
-    // we count until 5 secs reached to avoid blocking program (instead of using delay())
+    // we send a reading every 5 sec
+    // we count until 5 mins(default, based on lastSuccessfulLedMessage value) reached to avoid blocking program (instead of using delay())
     long now = millis();
     if(now - lastSuccessfulLedMessage > delayForLed)
     {
