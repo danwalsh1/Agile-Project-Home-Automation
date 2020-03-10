@@ -46,7 +46,7 @@
 						</div>
 					</template>
 				</div>
-				<form>
+				<!--<form>
 					<div class="form-group">
 						<table>
 							<tr>
@@ -60,7 +60,7 @@
 							
 						</table>
 					</div>
-				</form>
+				</form>-->
 			</div>
 			<div class="row">
 			</div>
@@ -155,7 +155,7 @@
 					cloneDelayControl.id = controlObject.name + "1";
 
 
-					cloneDelayControl.onchange = function(){onDelayChange(controlObject.name + "1")}
+					cloneDelayControl.onchange = function(){onDelayChange(controlObject.name + "1", controlObject.name)}
 
 					controlContainer.appendChild(clone);
 
@@ -249,13 +249,13 @@
 				};
 				socket.send(JSON.stringify(output));
 			}
-			function onDelayChange(lightName){
+			function onDelayChange(sliderName, lightName){
 				//let lightName = "lightControl";
-				let outputVal = document.getElementById(lightName).value
+				let outputVal = document.getElementById(sliderName).value
 				console.log(lightName + " [delay]: " + outputVal);
 				let output = {
 					"name":lightName,
-					"type":"lights",
+					"type":"delay",
 					"value":outputVal
 				};
 				socket.send(JSON.stringify(output));
