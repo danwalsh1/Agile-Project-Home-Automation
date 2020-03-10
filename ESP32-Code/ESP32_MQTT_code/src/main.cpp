@@ -20,6 +20,7 @@ WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
 long lastMsgTimer = 0;
+long lastSuccessfulLedMessage = 0;
 const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 22;         // GPIO22 (D22) on the DOIT-ESP32-DevKitV1
 //const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
@@ -27,6 +28,8 @@ const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18;
 
 bool lightsOn;
+
+int delayForLed;
 
 
 // setting PWM properties
@@ -68,44 +71,78 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         Serial.println("parseObject() failed. Non JSON format data received");
         return;
     }
-    // Extract values to appropriate fields of arrays
-    const char* name = root["name"];
-    const char* type = root["type"];
-    const char* value = root["value"];
+    if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0)
+    {
+        // Extract values to appropriate fields of arrays
+        const char* name = root["name"];
+        const char* type = root["type"];
+        const char* value = root["value"];
 
-    // Value conversion to 0-127 to fit 7 bit led PWM resolution 
-    int conversionTo128=0;                      // This to be corrected to some kind of non-volatile memory access to reset on reboot
+        // Received value for lights brightness adjustment
+        if(strcmp(type, "lights") == 0)
+        {
+            // Value conversion to 0-127 to fit 8 bit led PWM resolution 
+            int conversionTo128=0;                      // This to be corrected to some kind of non-volatile memory access to reset on reboot
 
-    // Handling errornous input from JSON data
-    if(atoi(value) > 100 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
-    {
-        conversionTo128 = 100;
-        Serial.println();
-        Serial.print("Entered value exceeding maximum value! Assigning value of: ");
-        Serial.println(conversionTo128);
-        brightness = conversionTo128;
+            // Handling errornous input from JSON data of type "lights"
+            if(atoi(value) > 100 && strcmp(name, "kitchen") == 0)
+            {
+                conversionTo128 = 100;
+                Serial.println();
+                Serial.print("Entered value exceeding maximum value! Assigning value of: ");
+                Serial.println(conversionTo128);
+                brightness = conversionTo128;
+            }
+                
+            else if(atoi(value) < 0 && strcmp(name, "kitchen") == 0)
+            {
+                conversionTo128 = 0;
+                Serial.println();
+                Serial.print("Entered value exceeding minimum value! Assigning value of: ");
+                Serial.println(conversionTo128);
+                brightness = conversionTo128;
+            }
+            if(atoi(value) >= 0 && atoi(value) <= 100 && strcmp(name, "kitchen") == 0)
+            {
+                conversionTo128 = int(atoi(value) * 1.27);
+                Serial.println();
+                Serial.print("Value after conversion is: ");
+                Serial.println(conversionTo128);
+                brightness = atoi(value);
+                lastSuccessfulLedMessage = millis();
+                ledcWrite(ledChannel, conversionTo128);
+            }
+        }
+
+        if(strcmp(type, "delay") == 0)
+        {   
+            if(atoi(value) > 60 && strcmp(name, "kitchen") == 0)
+            {
+                Serial.println();
+                Serial.print("Entered value exceeding minimum value! Assigning value of: ");
+                value = "60";
+                Serial.println(value);
+            }
+            else if(atoi(value) < 5 && strcmp(name, "kitchen") == 0)
+            {
+                Serial.println();
+                Serial.print("Entered value exceeding minimum value! Assigning value of: ");
+                value = "5";
+                Serial.println(value);
+            }
+            if(atoi(value) <= 60 && atoi(value) >= 5 && strcmp(name, "kitchen") == 0)
+            {
+                // Converting to milliseconds
+                delayForLed = atoi(value)*1000*60;
+                Serial.println();
+                Serial.print("Delay value is: ");
+                Serial.println(delayForLed);
+                lastSuccessfulLedMessage = millis();
+            }
+        }
     }
+
         
-    else if(atoi(value) < 0 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
-    {
-        conversionTo128 = 0;
-        Serial.println();
-        Serial.print("Entered value exceeding minimum value! Assigning value of: ");
-        Serial.println(conversionTo128);
-        brightness = conversionTo128;
-    }
-    else if(strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
-    {
-        conversionTo128 = int(atoi(value) * 1.27);
-        Serial.println();
-        Serial.print("Value after conversion is: ");
-        Serial.println(conversionTo128);
-        brightness = atoi(value);
-    }
-        
-    // Compare topic name and JSON received fields
-    if(strcmp(topic, "302CEM/lion/esp32/led_control") == 0 && strcmp(name, "kitchen") == 0  && strcmp(type, "lights") == 0)
-        ledcWrite(ledChannel, conversionTo128);
 
     Serial.println();
     blinkLED(2);
@@ -136,7 +173,7 @@ void mqttConnect() {
     }
 }
 
-
+/*
 void IRAM_ATTR MovementDetected()
 {
     Serial.println("Presence detected");
@@ -159,13 +196,13 @@ void turnLightOff()
     brightness = 0;
     ledcWrite(ledChannel, (int)(brightness*1.27));
 }
-
+*/
 void setup() {
     pinMode(onboardLED, OUTPUT);
     pinMode(switch1, INPUT);
     //pinMode(switch2, INPUT);
-    pinMode(pirSensor, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
+    //pinMode(pirSensor, INPUT_PULLUP);
+    //attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
@@ -207,6 +244,10 @@ void setup() {
 
     // The receivedCallback() function will be invoked when this client receives the subscribed topic:
     mqttClient.setCallback(receivedCallback);
+
+    Serial.println();
+    Serial.println("Setting default value for a delay to 5 min");
+    delayForLed = 5*1000*60;
 }
 
 
@@ -222,6 +263,12 @@ void loop() {
     // we send a reading every 5 secs
     // we count until 5 secs reached to avoid blocking program (instead of using delay())
     long now = millis();
+    if(now - lastSuccessfulLedMessage > delayForLed)
+    {
+        ledcWrite(ledChannel, 0);
+        brightness = 0;
+        
+    }
     if (now - lastMsgTimer > 5000) {
         lastMsgTimer = now;
 
