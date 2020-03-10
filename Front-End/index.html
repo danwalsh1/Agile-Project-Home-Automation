@@ -154,8 +154,8 @@
 					cloneControl.value = controlObject.value;
 					cloneDelayControl.id = controlObject.name + "1";
 
-f
-					cloneDelayControl.onchange = function(){onDelayChange(controlObject.name)}
+
+					cloneDelayControl.onchange = function(){onDelayChange(controlObject.name + "1", controlObject.name)}
 
 					controlContainer.appendChild(clone);
 
@@ -249,9 +249,9 @@ f
 				};
 				socket.send(JSON.stringify(output));
 			}
-			function onDelayChange(lightName){
+			function onDelayChange(sliderName, lightName){
 				//let lightName = "lightControl";
-				let outputVal = document.getElementById(lightName).value
+				let outputVal = document.getElementById(sliderName).value
 				console.log(lightName + " [delay]: " + outputVal);
 				let output = {
 					"name":lightName,
