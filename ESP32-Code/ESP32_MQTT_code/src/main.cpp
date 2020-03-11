@@ -184,7 +184,7 @@ void turnLightOff()
 
 void IRAM_ATTR MovementDetected()   // Function is called when movement is detected by PIR sensor
 {
-    Serial.println("Presence detected");
+    Serial.println("Presence detected... ");
     turnLightOn();
 }
 
