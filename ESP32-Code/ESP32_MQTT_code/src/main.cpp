@@ -2,7 +2,6 @@
 // main.cpp
 
 #include <Arduino.h>
-
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
@@ -10,7 +9,6 @@
 #include <math.h>
 //#include "cJSON.c"
 #include "ArduinoJson.h"
-
 #include "mqttcert.h"
 
 WiFiClientSecure espClient;
