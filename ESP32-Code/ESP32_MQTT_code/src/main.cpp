@@ -170,12 +170,14 @@ void mqttConnect() {
 
 void turnLightOn()
 {
+    Serial.println("Turning light on.");
     brightness = 100;
     ledcWrite(ledChannel, (int)(brightness*1.27));
 }
 
 void turnLightOff()
 {
+    Serial.println("Turning light off.");
     brightness = 0;
     ledcWrite(ledChannel, 0);
 }
@@ -188,7 +190,7 @@ void IRAM_ATTR MovementDetected()   // Function is called when movement is detec
 
 void IRAM_ATTR ButtonPressed()      // Function is called when button has been pressed
 {
-    Serial.println("Turning light off. Button pressed.");
+    Serial.println("Button pressed... ");
     turnLightOff();
 }
 
