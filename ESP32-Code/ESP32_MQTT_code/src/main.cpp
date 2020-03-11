@@ -31,6 +31,7 @@ const int resolution = 7;
 int brightness = 0;
 
 void turnLightOn();
+void turnLightOff();
 
 
 void blinkLED(int times) {
@@ -156,7 +157,8 @@ void mqttConnect() {
             mqttClient.subscribe((MQTT_TOPIC_NAME + "/#").c_str());
 
         }
-        else {
+        else
+        {
             Serial.println("...mqttConnect() failed, status code =");
             Serial.println(mqttClient.state());
             Serial.println("try again in 5 seconds...");
@@ -178,13 +180,14 @@ void turnLightOff()
     ledcWrite(ledChannel, 0);
 }
 
-void IRAM_ATTR MovementDetected()
+void IRAM_ATTR MovementDetected()   // Function is called when movement is detected by PIR sensor
 {
     Serial.println("Presence detected");
     turnLightOn();
 }
 
-void IRAM_ATTR ButtonPressed() {
+void IRAM_ATTR ButtonPressed()      // Function is called when button has been pressed
+{
     Serial.println("Turning light off. Button pressed.");
     turnLightOff();
 }
