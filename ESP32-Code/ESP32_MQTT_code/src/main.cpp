@@ -76,7 +76,7 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         if(strcmp(type, "lights") == 0)
         {
             // Value conversion to 0-127 to fit 8 bit led PWM resolution 
-            int conversionTo128=0;                      // This to be corrected to some kind of non-volatile memory access to reset on reboot
+            int conversionTo128 = 0;                      // This to be corrected to some kind of non-volatile memory access to reset on reboot
 
             // Handling errornous input from JSON data of type "lights"
             if(atoi(value) > 100 && strcmp(name, "kitchen") == 0)
@@ -86,8 +86,7 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
                 Serial.print("Entered value exceeding maximum value! Assigning value of: ");
                 Serial.println(conversionTo128);
                 brightness = conversionTo128;
-            }
-                
+            }  
             else if(atoi(value) < 0 && strcmp(name, "kitchen") == 0)
             {
                 conversionTo128 = 0;
@@ -136,8 +135,6 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
         }
     }
 
-        
-
     Serial.println();
     blinkLED(2);
 }
@@ -158,7 +155,8 @@ void mqttConnect() {
             // Let's just subscribe to the same feed we are publishing to, to see if our message gets recorded.
             mqttClient.subscribe((MQTT_TOPIC_NAME + "/#").c_str());
 
-        } else {
+        }
+        else {
             Serial.println("...mqttConnect() failed, status code =");
             Serial.println(mqttClient.state());
             Serial.println("try again in 5 seconds...");
@@ -180,7 +178,7 @@ void IRAM_ATTR MovementDetected()
     turnLightOn();
 }
 
-void IRAM_ATTR lightsOff(){
+void IRAM_ATTR turnLightOff() {
     Serial.println("Turning light off. Button pressed");
     brightness = 0;
     ledcWrite(ledChannel, 0);
@@ -189,6 +187,8 @@ void IRAM_ATTR lightsOff(){
 
 void setup() {
     pinMode(onboardLED, OUTPUT);
+    pinMode(switch1, INPUT_PULLDOWN);
+    // pinMode(switch2, INPUT);
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
@@ -212,9 +212,7 @@ void setup() {
         Serial.print(".");
     }
     
-    pinMode(switch1, INPUT_PULLDOWN);
-    attachInterrupt(digitalPinToInterrupt(switch1), lightsOff, FALLING);
-    // pinMode(switch2, INPUT);
+    attachInterrupt(digitalPinToInterrupt(switch1), turnlightOff, FALLING);
     pinMode(pirSensor, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
 
