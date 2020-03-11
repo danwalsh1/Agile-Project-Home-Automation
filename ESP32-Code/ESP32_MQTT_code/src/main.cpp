@@ -23,9 +23,7 @@ const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18;       // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
 
 bool lightsOn;
-
 int delayForLed;
-
 
 // setting PWM properties
 const int freq = 5000;
