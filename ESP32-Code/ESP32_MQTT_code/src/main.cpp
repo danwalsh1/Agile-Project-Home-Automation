@@ -188,7 +188,6 @@ void IRAM_ATTR lightsOff(){
     ledcWrite(ledChannel, 0);
 }
 
-
 void turnLightOn()
 {
     brightness = 100;
@@ -198,7 +197,6 @@ void turnLightOn()
 
 void setup() {
     pinMode(onboardLED, OUTPUT);
-
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
@@ -253,8 +251,6 @@ void setup() {
 }
 
 
-
-
 void loop() {
     mqttConnect();
 
@@ -268,8 +264,8 @@ void loop() {
     {
         ledcWrite(ledChannel, 0);
         brightness = 0;
-        
     }
+
     if (now - lastMsgTimer > 5000) {
         lastMsgTimer = now;
 
@@ -315,6 +311,5 @@ void loop() {
         // This prints:
         // {"name":"kitchen","type":"lights","value":"%d"}, %d - valueof(singleLedDataToSend.c_str());
         mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), JSONmessageBuffer);
-        
     }
 }
