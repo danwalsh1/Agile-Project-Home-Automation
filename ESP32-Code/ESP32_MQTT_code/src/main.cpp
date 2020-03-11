@@ -22,7 +22,6 @@ const int switch1 = 19;         // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18;       // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
 
-bool lightsOn;
 int delayForLed;
 
 // setting PWM properties
@@ -215,7 +214,7 @@ void setup() {
     
     pinMode(switch1, INPUT_PULLDOWN);
     attachInterrupt(digitalPinToInterrupt(switch1), lightsOff, FALLING);
-    //pinMode(switch2, INPUT);
+    // pinMode(switch2, INPUT);
     pinMode(pirSensor, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
 
@@ -273,7 +272,7 @@ void loop() {
         mqttClient.publish((MQTT_TOPIC_NAME + "/button1").c_str(), button1DataToSend.c_str());
 
 
-        //Getting button2 reading
+        // Getting button2 reading
         // just convert time stamp to a c-string and send as data:
         String button2DataToSend = (String)digitalRead(switch2); // dataToSend could be a sensor reading instead
         Serial.println();
