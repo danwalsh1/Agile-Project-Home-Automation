@@ -1,8 +1,5 @@
-// Chris Bass - Coventry University
-// 13/04/2019
 // Secure encrypted MQTT with TLS/SSL using the ESP32 esp32doit-devkit-v1
 // main.cpp
-// This program provides an example of sending and receiving data via the MQTT publish-subscribe protocol
 
 #include <Arduino.h>
 
