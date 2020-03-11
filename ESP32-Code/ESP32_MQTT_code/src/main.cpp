@@ -172,22 +172,26 @@ void turnLightOn()
     ledcWrite(ledChannel, (int)(brightness*1.27));
 }
 
+void turnLightOff()
+{
+    brightness = 0;
+    ledcWrite(ledChannel, 0);
+}
+
 void IRAM_ATTR MovementDetected()
 {
     Serial.println("Presence detected");
     turnLightOn();
 }
 
-void IRAM_ATTR turnLightOff() {
-    Serial.println("Turning light off. Button pressed");
-    brightness = 0;
-    ledcWrite(ledChannel, 0);
+void IRAM_ATTR ButtonPressed() {
+    Serial.println("Turning light off. Button pressed.");
+    turnLightOff();
 }
 
 
 void setup() {
     pinMode(onboardLED, OUTPUT);
-    pinMode(switch1, INPUT_PULLDOWN);
     // pinMode(switch2, INPUT);
 
     // configure LED PWM functionalitites
@@ -212,7 +216,8 @@ void setup() {
         Serial.print(".");
     }
     
-    attachInterrupt(digitalPinToInterrupt(switch1), turnlightOff, FALLING);
+    pinMode(switch1, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(switch1), ButtonPressed, FALLING);
     pinMode(pirSensor, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
 
