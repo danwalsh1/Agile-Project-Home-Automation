@@ -169,6 +169,12 @@ void mqttConnect() {
 }
 
 
+void turnLightOn()
+{
+    brightness = 100;
+    ledcWrite(ledChannel, (int)(brightness*1.27));
+}
+
 void IRAM_ATTR MovementDetected()
 {
     Serial.println("Presence detected");
@@ -179,12 +185,6 @@ void IRAM_ATTR lightsOff(){
     Serial.println("Turning light off. Button pressed");
     brightness = 0;
     ledcWrite(ledChannel, 0);
-}
-
-void turnLightOn()
-{
-    brightness = 100;
-    ledcWrite(ledChannel, (int)(brightness*1.27));
 }
 
 
