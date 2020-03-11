@@ -290,8 +290,6 @@ void loop() {
         mqttClient.publish((MQTT_TOPIC_NAME + "/button2").c_str(), button2DataToSend.c_str());
         */
 
-        //  Getting singleLED reading
-
 
         //mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), singleLedDataToSend.c_str());
         //mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), "{\"name\":\"kitchen\", \"type\": \"lights\", \"value\":\"50\"}");
