@@ -10,6 +10,8 @@
 //#include "cJSON.c"
 #include "ArduinoJson.h"
 #include "mqttcert.h"
+#include <Wire.h>
+#include <SparkFunTSL2561.h>
 
 WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
@@ -18,7 +20,6 @@ long lastMsgTimer = 0;
 long lastSuccessfulLedMessage = 0;
 const int onboardLED = 2;       // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 19;         // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
-//const int switch2 = 18;          // GPIO5 (D5) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;        // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18;       // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
 
@@ -30,10 +31,23 @@ const int ledChannel = 0;
 const int resolution = 7;
 int brightness = 0;
 
+// Create an SFE_TSL2561 object, here called "light":
+ 
+SFE_TSL2561 light;
+
+boolean gain; // Gain setting, 0 = X1, 1 = X16;
+unsigned int ms; // Integration ("shutter") time in milliseconds
+
+// Function declaration to be used later
 void turnLightOn();
 void turnLightOff();
+double lightSensorRead();
+void printError(byte);
 
-
+/**
+ * A function to blink on-board LED
+ * @param int times - amount of times to blink
+ */
 void blinkLED(int times) {
     for (int i = 0; i < times; i++) {
         digitalWrite(onboardLED, HIGH);
@@ -43,7 +57,11 @@ void blinkLED(int times) {
     }
 }
 
-// The receivedCallback() function will be invoked when this client receives data about the subscribed topic:
+/** The receivedCallback() function will be invoked when this client receives data about the subscribed topic
+ * @param topic - topic to wait message from
+ * @param payload - a message received on a subscribed topic
+ * @param length - message length
+ */
 void receivedCallback(char* topic, byte* payload, unsigned int length) {
     Serial.print("Message received on topic:  ");
     Serial.print(topic);
@@ -167,14 +185,62 @@ void mqttConnect() {
     }
 }
 
-
+/** 
+ * Turns the LED on
+ */
 void turnLightOn()
 {
-    Serial.println("Turning light on.");
-    brightness = 100;
-    ledcWrite(ledChannel, (int)(brightness*1.27));
+    lastSuccessfulLedMessage = millis();
+    double lastLightSendorReading = lightSensorRead();
+
+    if(lastLightSendorReading > 600)
+    {
+        Serial.println("Too bright, no liughts are going to be turn on.");
+        brightness = 0;
+        ledcWrite(ledChannel,0);
+    }
+    else if(lastLightSendorReading > 0 && lastLightSendorReading <= 100)
+    {
+        Serial.println("100% brightness");
+        brightness = 100;
+        ledcWrite(ledChannel, (int)(brightness*1.27));
+    }
+    else if(lastLightSendorReading > 100 && lastLightSendorReading <= 200)
+    {
+        Serial.println("90% brightness");
+        brightness = 90;
+        ledcWrite(ledChannel, (int)(brightness*1.27));
+    }
+    else if(lastLightSendorReading > 200 && lastLightSendorReading <= 300)
+    {
+        Serial.println("80% brightness");
+        brightness = 80;
+        ledcWrite(ledChannel, (int)(brightness*1.27));
+    }
+    else if(lastLightSendorReading > 300 && lastLightSendorReading <= 400)
+    {
+        Serial.println("70% brightness");
+        brightness = 70;
+        ledcWrite(ledChannel, (int)(brightness*1.27));
+    }
+    else if(lastLightSendorReading > 400 && lastLightSendorReading <= 500)
+    {
+        Serial.println("60% brightness");
+        brightness = 60;
+        ledcWrite(ledChannel, (int)(brightness*1.27));
+    }
+    else if(lastLightSendorReading > 500 && lastLightSendorReading <= 600)
+    {
+        Serial.println("50% brightness");
+        brightness = 50;
+        ledcWrite(ledChannel, (int)(brightness*1.27));
+    }
+
 }
 
+/** 
+ * Turns the LED off
+ */
 void turnLightOff()
 {
     Serial.println("Turning light off.");
@@ -182,22 +248,119 @@ void turnLightOff()
     ledcWrite(ledChannel, 0);
 }
 
+/**
+ * ISR for movement sensor detecting
+ */
 void IRAM_ATTR MovementDetected()   // Function is called when movement is detected by PIR sensor
 {
     Serial.println("Presence detected... ");
     turnLightOn();
 }
 
+/**
+ * ISR for buttton press
+ */
 void IRAM_ATTR ButtonPressed()      // Function is called when button has been pressed
 {
     Serial.println("Button pressed... ");
     turnLightOff();
 }
 
+double lightSensorRead()
+{
+    // ms = 1000;
+    // light.manualStart();
+    delay(ms);
+    // light.manualStop();
+    
+    // Once integration is complete, we'll retrieve the data.
+    
+    // There are two light sensors on the device, one for visible light
+    // and one for infrared. Both sensors are needed for lux calculations.
+    
+    // Retrieve the data from the device:
+    
+    unsigned int data0, data1;
+ 
+    if (light.getData(data0,data1))
+    {
+        // getData() returned true, communication was successful
+        
+        //Serial.print("data0: ");
+        //Serial.print(data0);
+        //Serial.print(" data1: ");
+        //Serial.print(data1);
+        
+        // To calculate lux, pass all your settings and readings
+        // to the getLux() function.
+        
+        double lux; // Resulting lux value
+        boolean good; // True if neither sensor is saturated
+        
+        // Perform lux calculation:
+        
+        good = light.getLux(gain,ms,data0,data1,lux);
+        
+        // Print out the results:
+        
+        //Serial.print(" lux: ");
+        //Serial.print(lux);
+        if (good) 
+        {
+            //Serial.println(" (good)");
+            return lux; 
+        }
+        else 
+        {
+            //Serial.println(" (BAD)");
+            return -1;
+        }
+    }
+    else
+    {
+        // getData() returned false because of an I2C error, inform the user.
+        
+        byte error = light.getError();
+        printError(error);
+        return -1;
+    }
+}
+    
+void printError(byte error)
+    // If there's an I2C error, this function will
+    // print out an explanation.
+    {
+    Serial.print("I2C error: ");
+    Serial.print(error,DEC);
+    Serial.print(", ");
+    
+    switch(error)
+    {
+    case 0:
+    Serial.println("success");
+    break;
+    case 1:
+    Serial.println("data too long for transmit buffer");
+    break;
+    case 2:
+    Serial.println("received NACK on address (disconnected?)");
+    break;
+    case 3:
+    Serial.println("received NACK on data");
+    break;
+    case 4:
+    Serial.println("other error");
+    break;
+    default:
+    Serial.println("unknown error");
+    }
+
+}
+
 
 void setup() {
+    // Setting onboard LED
     pinMode(onboardLED, OUTPUT);
-    // pinMode(switch2, INPUT);
 
     // configure LED PWM functionalitites
     ledcSetup(ledChannel, freq, resolution);
@@ -220,8 +383,64 @@ void setup() {
         delay(500);
         Serial.print(".");
     }
+
+    // Start I2C communication
+    light.begin();
+   // Get factory ID from sensor:
+    // (Just for fun, you don't need to do this to operate the sensor)
     
-    pinMode(switch1, INPUT_PULLDOWN);
+    unsigned char ID;
+    
+    if (light.getID(ID))
+    {
+    Serial.print("Got factory ID: 0X");
+    Serial.print(ID,HEX);
+    Serial.println(", should be 0X5X");
+    }
+    // Most library commands will return true if communications was successful,
+    // and false if there was a problem. You can ignore this returned value,
+    // or check whether a command worked correctly and retrieve an error code:
+    else
+    {
+    byte error = light.getError();
+    printError(error);
+    }
+    
+    // The light sensor has a default integration time of 402ms,
+    // and a default gain of low (1X).
+    
+    // If you would like to change either of these, you can
+    // do so using the setTiming() command.
+    
+    // If gain = false (0), device is set to low gain (1X)
+    // If gain = high (1), device is set to high gain (16X)
+    
+    gain = 0;
+
+    // If time = 0, integration will be 13.7ms
+    // If time = 1, integration will be 101ms
+    // If time = 2, integration will be 402ms
+    // If time = 3, use manual start / stop to perform your own integration
+    
+    unsigned char time = 2;
+    
+    // setTiming() will set the third parameter (ms) to the
+    // requested integration time in ms (this will be useful later):
+    
+    Serial.println("Set timing...");
+    light.setTiming(gain,time,ms);
+    
+    // To start taking measurements, power up the sensor:
+    
+    Serial.println("Powerup...");
+    light.setPowerUp();
+    
+    // The sensor will now gather light during the integration time.
+    // After the specified time, you can retrieve the result from the sensor.
+    // Once a measurement occurs, another integration period will start.
+    
+    // Setting up interrupts
+    pinMode(switch1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(switch1), ButtonPressed, FALLING);
     pinMode(pirSensor, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(pirSensor), MovementDetected, RISING);
@@ -256,6 +475,9 @@ void loop() {
 
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
+
+    //Serial.print("Lux value is: ");
+    //Serial.println(lightSensorRead());
 
     // we send a reading every 5 sec
     // we count until 5 mins(default, based on lastSuccessfulLedMessage value) reached to avoid blocking program (instead of using delay())
