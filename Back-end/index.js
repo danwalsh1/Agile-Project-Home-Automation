@@ -106,7 +106,7 @@ app.ws.use(route.all('/live', function (ctx) {
             }        
           })
         }
-        console.log("===============END================")
+        console.log("===============END===============")
       }        
     })
   })
