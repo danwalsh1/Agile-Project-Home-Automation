@@ -78,7 +78,7 @@ app.ws.use(route.all('/live', function (ctx) {
 
         let LedValue = (output[0].brightness)
         let dbStat = null;
-        console.log("================START==================")
+        console.log("================START====================")
         console.log(LedValue)
         if ((LedValue == 0 ) && (data.value == 0)){
           ;
