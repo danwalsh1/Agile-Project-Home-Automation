@@ -109,11 +109,12 @@ app.ws.use(route.all('/live', function (ctx) {
         console.log("===============END================")
       }        
     })
+  })
    
 
   console.log(`[Socket] Topic: ${topic} Message: ${message}`);
  
-});
+}));
  
 app.listen(8888);
 console.log(`listening on port ${port}`)
