@@ -67,22 +67,53 @@ app.ws.use(route.all('/live', function (ctx) {
     message = message.toString()
     var data = JSON.parse(message)
     console.log(message)
-    const dbStat = 'insert into Light_History (brightness) VALUES ( "'+data.value+'" )'
-    data = {
-      message: message
-    }
-    db.query(dbStat, data, (error, output)=>{
+    let LedValueSql = 'SELECT brightness FROM Light_History ORDER BY id DESC LIMIT 1'
+    let LedValue = db.query(LedValueSql, data, (error, output)=>{
       if(error){
         console.log(error)
       } else {
-        console.log(output)
+        console.log("Save data")
+        /*console.log(output)
+        console.log(output[0].brightness)*/
+
+        let LedValue = (output[0].brightness)
+        let dbStat = null;
+        console.log("================START==================")
+        console.log(LedValue)
+        if ((LedValue == 0 ) && (data.value == 0)){
+          ;
+        }else if ((LedValue == 0) && (data.value > 0)){
+          dbStat = 'insert into Light_History (brightness, name) VALUES ( "'+data.value+'", "'+data.name+'" )'
+          console.log("inserting new above 0")
+        }else if ((LedValue > 0) && (data.value == 0)){
+          dbStat = 'insert into Light_History (brightness, name) VALUES ("0", "'+data.name+'")'
+          console.log("inserting new below 0")
+        }else if ((LedValue > 0) && (data.value > 0)){
+          ;
+         }else{
+          //dbStat = 'insert into Light_History (brightness, name) VALUES ( "'+data.value+'", "'+data.name+'" )' 
+          console.log("weird else thing")
+        }
+        data = {
+          message: message
+        }
+        if(dbStat != null){
+          db.query(dbStat, data, (error, output)=>{
+            if(error){
+              console.log(error)
+            } else {
+              console.log(output)
+            }        
+          })
+        }
+        console.log("===============END================")
       }        
     })
-  }) 
+   
 
   console.log(`[Socket] Topic: ${topic} Message: ${message}`);
  
-}));
+});
  
 app.listen(8888);
 console.log(`listening on port ${port}`)
