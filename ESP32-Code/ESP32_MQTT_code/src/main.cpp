@@ -37,6 +37,7 @@ SFE_TSL2561 light;
 
 boolean gain; // Gain setting, 0 = X1, 1 = X16;
 unsigned int ms; // Integration ("shutter") time in milliseconds
+double lastLightSendorReading;
 
 // Function declaration to be used later
 void turnLightOn();
@@ -191,11 +192,10 @@ void mqttConnect() {
 void turnLightOn()
 {
     lastSuccessfulLedMessage = millis();
-    double lastLightSendorReading = lightSensorRead();
-
+    //lightSensorRead();
     if(lastLightSendorReading > 600)
     {
-        Serial.println("Too bright, no liughts are going to be turn on.");
+        Serial.println("Too bright, no lights are going to be turn on.");
         brightness = 0;
         ledcWrite(ledChannel,0);
     }
@@ -266,6 +266,10 @@ void IRAM_ATTR ButtonPressed()      // Function is called when button has been p
     turnLightOff();
 }
 
+/**
+ * Reads i2c light sensor
+ * @returns value in lux, -1 if error occured
+ */ 
 double lightSensorRead()
 {
     // ms = 1000;
@@ -439,6 +443,9 @@ void setup() {
     // After the specified time, you can retrieve the result from the sensor.
     // Once a measurement occurs, another integration period will start.
     
+    // Initial value reading from a sensor 
+    lastLightSendorReading = lightSensorRead();
+
     // Setting up interrupts
     pinMode(switch1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(switch1), ButtonPressed, FALLING);
@@ -476,12 +483,12 @@ void loop() {
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
 
-    //Serial.print("Lux value is: ");
-    //Serial.println(lightSensorRead());
-
+    // Reading light sensor to off-load the ISR
+    lastLightSendorReading = lightSensorRead();
     // we send a reading every 5 sec
     // we count until 5 mins(default, based on lastSuccessfulLedMessage value) reached to avoid blocking program (instead of using delay())
     long now = millis();
+
     if(now - lastSuccessfulLedMessage > delayForLed)
     {
         ledcWrite(ledChannel, 0);
@@ -490,7 +497,6 @@ void loop() {
 
     if (now - lastMsgTimer > 5000) {
         lastMsgTimer = now;
-
         /*
         // Getting button1 reading
         // just convert time stamp to a c-string and send as data:
