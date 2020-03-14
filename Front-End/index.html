@@ -34,9 +34,14 @@
 												<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
 											</tr>
 											<tr>
-												<td style="padding-right: 5px;"><i class="fa fa-moon-o" aria-hidden="true"></i></td>
-												<td><input type="range" class="custom-range delay-control" min="0" max="100" value="0"></td>
-												<td style="padding-left: 5px;"><i class="fa fa-sun-o" aria-hidden="true"></i></td>
+												<td style="padding-right: 5px;"><i class="fa fa-hourglass-o" aria-hidden="true"></i></td>
+												<td><input type="range" class="custom-range delay-control" min="5" max="60" value="5" step="5" id="myRange"></td>
+												<td style="padding-left: 5px;"><i class="fa fa-hourglass" aria-hidden="true"></i></td>
+											</tr>
+											<tr>
+												<div class="custom-range delay-control">
+													<span id="demo">0</span>
+												</div>
 											</tr>
 											<button class="btn btn-primary usage-button" type="button">Usage Data</button>
 										</table>
@@ -98,6 +103,16 @@
 				console.log("Loading usage modal for " + lightName);
 				$("#usageModal").modal("show")
 			}
+		</script>
+		<script>
+			var slider = document.getElementById("myRange");
+			var output = document.getElementById("demo");
+				output.innerHTML = "Time Delay (Minutes):  " + slider.value; // Display the default slider value
+
+		// Update the current slider value (each time you drag the slider handle)
+				slider.oninput = function() {
+    				output.innerHTML = "Time Delay (Minutes):  " + this.value;
+}
 		</script>
 		<script type="text/javascript">
 			let lightTemplate = document.querySelector('#lightControlTemplate');
