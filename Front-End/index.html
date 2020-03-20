@@ -67,6 +67,24 @@
 					</div>
 				</form>-->
 			</div>
+			<div class="row" style="margin-top: 10px;">
+				<div class="col-12" id="alarmcontrolcontainer">
+					<template id="alarmControlTemplate">
+						<div class="card" style="width: 18rem;">
+							<div class="card-body" style="text-align: center;">
+								<h5 class="card-title automation-title"></h5>
+								<form>
+									<div class="form-group">
+										<table>
+											<button class="btn btn-primary mute-button" type="button">Mute/Unmute</button>
+										</table>
+									</div>
+								</form>
+							</div>
+						</div>
+					</template>
+				</div>
+			</div>
 			<div class="row">
 			</div>
 			<div class="modal" tabindex="-1" id="usageModal" role="dialog">
@@ -105,21 +123,26 @@
 			}
 		</script>
 		<script>
-			var slider = document.getElementById("myRange");
+			/*var slider = document.getElementById("myRange");
 			var output = document.getElementById("demo");
 				output.innerHTML = "Time Delay (Minutes):  " + slider.value; // Display the default slider value
 
 		// Update the current slider value (each time you drag the slider handle)
 				slider.oninput = function() {
     				output.innerHTML = "Time Delay (Minutes):  " + this.value;
-}
+}*/
 		</script>
 		<script type="text/javascript">
+			console.log("starting setup...")
 			let lightTemplate = document.querySelector('#lightControlTemplate');
 			let controlContainer = document.querySelector('#control-container');
 
+			let alarmTemplate = document.querySelector('#alarmControlTemplate');
+			let alarmControlContainer = document.querySelector('#alarmcontrolcontainer');
+
 			let currentControls = {
-				"lights":[]
+				"lights":[],
+				"alarms":[]
 			};
 
 			/*
@@ -130,6 +153,12 @@
 			function isControlNew(controlObject){
 				if(controlObject.type == "lights"){
 					if(currentControls.lights.includes(controlObject.name)){
+						return false;
+					}else{
+						return true;
+					}
+				}else if(controlObject.type == "alarms"){
+					if(currentControls.alarms.includes(controlObject.name)){
 						return false;
 					}else{
 						return true;
@@ -180,6 +209,24 @@
 
 			/*
 			 *  Give a JSON object from MQTT
+			 *  Will add a new alarm control to the UI for the given control object from MQTT
+			 */
+			 function addNewAlarmControl(controlObject){
+				if(controlObject.type == "alarms"){
+					let clone = alarmTemplate.content.cloneNode(true);
+					let cloneHeading = clone.querySelector(".automation-title");
+					let cloneUsageButton = clone.querySelector(".mute-button");
+
+					cloneHeading.textContent = controlObject.name;
+
+					alarmControlContainer.appendChild(clone);
+
+					currentControls.alarms.push(controlObject.name);
+				}
+			}
+
+			/*
+			 *  Give a JSON object from MQTT
 			 *  Run this to automatically deal with adding new controls or updating current ones
 			 */
 			function handleControlData(controlObject){
@@ -218,6 +265,14 @@
 				"value":"48"
 			};
 
+			let testAlarm = {
+				"name": "test alarm",
+				"type":"alarms"
+			}
+
+			addNewAlarmControl(testAlarm);
+			console.log("added test alarm");
+			//handleControlData(testAlarm);
 			//handleControlData(testJSON);
 
 			// End of test code *******************************************
