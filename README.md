@@ -31,8 +31,12 @@ Microcontroller is publishing current LED data to:
 
 	`302CEM/lion/esp32/singleLED`
 
-The format of publishing is JSON with fields and values of:
+Current LED status is being sent in following JSON format:
 	
-	`{"name":"kitchen","type":"lights","value":"0"}`
+	`{"name":"kitchen","type":"lights","value":"X"}`
 
-*NB value of "0" will depend on data received previously. Initially, value 0 is assigned.*
+*NB value of "X" will depend on data received previously. Initially, value 0 is assigned.*
+
+Movement sensor sends data once movement is registered. Please note, it sends only one notification every 10 sec between motion detections.
+
+	`{"name":"kitchen","type":"movement","value":"1"}`
