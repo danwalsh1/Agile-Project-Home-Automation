@@ -22,14 +22,21 @@ const int onboardLED = 2; // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 19;   // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;  // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18; // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
+const int buzzer = 12; // GPIO12 (D12) on the DOIT-ESP32-DevKitV1
 
 int delayForLed;
 
-// setting PWM properties
-const int freq = 5000;
-const int ledChannel = 0;
-const int resolution = 7;
+// Setting PWM properties for LED brightness control
+const int ledChannel = 0;       // Using PWM channel 0
+const int ledFreq = 5000;
+const int ledResolution = 7;
 int brightness = 0;
+
+// Setting PWM prroperties for buzzer control
+const int buzzerChannel = 1;    // Using PWM channel 1
+const int buzzerFreq = 2000;    // Setting frequency. This will affect the type of sound produced.
+const int buzzerResolution = 8; // Using an 8 bit resolution for duty cycle
+const int buzzerDutyCycle = 127; // Setting duty cycle to 50%. Duty cycle value should determine volume of buzzer.
 
 // Create an SFE_TSL2561 object, here called "light":
 
@@ -373,10 +380,15 @@ void setup()
     // Setting onboard LED
     pinMode(onboardLED, OUTPUT);
 
-    // configure LED PWM functionalitites
-    ledcSetup(ledChannel, freq, resolution);
-    // attach the channel to the GPIO to be controlled
+    // Configure LED PWM functionalitites
+    ledcSetup(ledChannel, ledFreq, ledResolution);
+    // Attach ledChannel to the GPIO to be controlled
     ledcAttachPin(singleLED, ledChannel);
+
+    // Configure buzzer PWM functionalitites
+    ledcSetup(buzzerChannel, buzzerFreq, buzzerResolution);
+    // Attach buzzerChannel to the GPIO to be controlled
+    ledcAttachPin(buzzer, buzzerChannel);
 
     Serial.begin(9600);
     Serial.println();
@@ -490,6 +502,10 @@ void loop()
 
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
+
+    // Buzzer
+    ledcWrite(buzzerChannel, buzzerDutyCycle);
+    ledcWriteTone(buzzerChannel, buzzerFreq);
 
     // Reading light sensor to off-load the ISR
     lastLightSendorReading = lightSensorRead();
