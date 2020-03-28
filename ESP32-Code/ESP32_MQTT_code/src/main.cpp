@@ -22,7 +22,7 @@ const int onboardLED = 2; // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 19;   // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;  // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18; // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
-const int buzzer = 12; // GPIO12 (D12) on the DOIT-ESP32-DevKitV1
+const int buzzer = 13; // GPIO13 (D13) on the DOIT-ESP32-DevKitV1
 
 int delayForLed;
 
@@ -31,12 +31,6 @@ const int ledChannel = 0;       // Using PWM channel 0
 const int ledFreq = 5000;
 const int ledResolution = 7;
 int brightness = 0;
-
-// Setting PWM prroperties for buzzer control
-const int buzzerChannel = 1;    // Using PWM channel 1
-const int buzzerFreq = 2000;    // Setting frequency. This will affect the type of sound produced.
-const int buzzerResolution = 8; // Using an 8 bit resolution for duty cycle
-const int buzzerDutyCycle = 127; // Setting duty cycle to 50%. Duty cycle value should determine volume of buzzer.
 
 // Create an SFE_TSL2561 object, here called "light":
 
@@ -51,6 +45,8 @@ bool movementSensed = false;
 // Function declaration to be used later
 void turnLightOn();
 void turnLightOff();
+void turnBuzzerOn();
+void turnBuzzerOff();
 double lightSensorRead();
 void printError(byte);
 
@@ -375,6 +371,15 @@ void printError(byte error)
     }
 }
 
+void turnBuzzerOn()
+{
+    digitalWrite(buzzer, LOW);
+};
+void turnBuzzerOff()
+{
+    digitalWrite(buzzer, HIGH);
+};
+
 void setup()
 {
     // Setting onboard LED
@@ -385,10 +390,9 @@ void setup()
     // Attach ledChannel to the GPIO to be controlled
     ledcAttachPin(singleLED, ledChannel);
 
-    // Configure buzzer PWM functionalitites
-    ledcSetup(buzzerChannel, buzzerFreq, buzzerResolution);
-    // Attach buzzerChannel to the GPIO to be controlled
-    ledcAttachPin(buzzer, buzzerChannel);
+    // Setting up buzzer
+    pinMode(buzzer, OUTPUT);
+    turnBuzzerOff();
 
     Serial.begin(9600);
     Serial.println();
@@ -503,9 +507,7 @@ void loop()
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
 
-    // Buzzer
-    ledcWrite(buzzerChannel, buzzerDutyCycle);
-    ledcWriteTone(buzzerChannel, buzzerFreq);
+
 
     // Reading light sensor to off-load the ISR
     lastLightSendorReading = lightSensorRead();
@@ -521,6 +523,7 @@ void loop()
 
     if (movementSensed)
     {
+        turnBuzzerOn();
         StaticJsonBuffer<200> jsonBuffer;
         JsonObject &root = jsonBuffer.createObject();
         root["name"] = "kitchen";
@@ -543,6 +546,7 @@ void loop()
 
     if (now - lastMsgTimer > 5000)
     {
+        
         lastMsgTimer = now;
         /*
         // Getting button1 reading
