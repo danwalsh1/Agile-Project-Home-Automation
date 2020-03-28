@@ -22,13 +22,14 @@ const int onboardLED = 2; // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 19;   // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;  // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18; // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
+const int buzzer = 13; // GPIO13 (D13) on the DOIT-ESP32-DevKitV1
 
 int delayForLed;
 
-// setting PWM properties
-const int freq = 5000;
-const int ledChannel = 0;
-const int resolution = 7;
+// Setting PWM properties for LED brightness control
+const int ledChannel = 0;       // Using PWM channel 0
+const int ledFreq = 5000;
+const int ledResolution = 7;
 int brightness = 0;
 
 // Create an SFE_TSL2561 object, here called "light":
@@ -44,6 +45,8 @@ bool movementSensed = false;
 // Function declaration to be used later
 void turnLightOn();
 void turnLightOff();
+void turnBuzzerOn();
+void turnBuzzerOff();
 double lightSensorRead();
 void printError(byte);
 
@@ -368,15 +371,28 @@ void printError(byte error)
     }
 }
 
+void turnBuzzerOn()
+{
+    digitalWrite(buzzer, LOW);
+};
+void turnBuzzerOff()
+{
+    digitalWrite(buzzer, HIGH);
+};
+
 void setup()
 {
     // Setting onboard LED
     pinMode(onboardLED, OUTPUT);
 
-    // configure LED PWM functionalitites
-    ledcSetup(ledChannel, freq, resolution);
-    // attach the channel to the GPIO to be controlled
+    // Configure LED PWM functionalitites
+    ledcSetup(ledChannel, ledFreq, ledResolution);
+    // Attach ledChannel to the GPIO to be controlled
     ledcAttachPin(singleLED, ledChannel);
+
+    // Setting up buzzer
+    pinMode(buzzer, OUTPUT);
+    turnBuzzerOff();
 
     Serial.begin(9600);
     Serial.println();
@@ -491,6 +507,8 @@ void loop()
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
 
+
+
     // Reading light sensor to off-load the ISR
     lastLightSendorReading = lightSensorRead();
     // we send a reading every 5 sec
@@ -505,6 +523,7 @@ void loop()
 
     if (movementSensed)
     {
+        turnBuzzerOn();
         StaticJsonBuffer<200> jsonBuffer;
         JsonObject &root = jsonBuffer.createObject();
         root["name"] = "kitchen";
@@ -527,6 +546,7 @@ void loop()
 
     if (now - lastMsgTimer > 5000)
     {
+        
         lastMsgTimer = now;
         /*
         // Getting button1 reading
