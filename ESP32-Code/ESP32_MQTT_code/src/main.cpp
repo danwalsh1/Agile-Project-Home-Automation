@@ -537,23 +537,6 @@ void loop()
         // {"name":"kitchen","type":"movement","value":"%d"}, %d - valueof(singleLedDataToSend.c_str());
         mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), JSONmessageBuffer);
         movementSensed = false;
-
-        Serial.println();
-
-        StaticJsonBuffer<200> jsonBuffer1;
-        JsonObject &root1 = jsonBuffer1.createObject();
-        root1["name"] = "kitchen";
-        root1["type"] = "value";
-        root1["value"] = (String)brightness;
-        char JSONmessageBuffer1[100];
-        root.printTo(JSONmessageBuffer1, sizeof(JSONmessageBuffer1));
-
-        Serial.println();
-        Serial.print("Publishing data:  ");
-        Serial.println(JSONmessageBuffer1);
-        // This prints:
-        // {"name":"kitchen","type":"movement","value":"%d"}, %d - valueof(singleLedDataToSend.c_str());
-        mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), JSONmessageBuffer1);
     }
 
     if (now - lastMsgTimer > 5000)
