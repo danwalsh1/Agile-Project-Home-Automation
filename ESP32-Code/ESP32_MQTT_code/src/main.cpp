@@ -22,12 +22,12 @@ const int onboardLED = 2; // GPIO2 (D2) on the DOIT-ESP32-DevKitV1
 const int switch1 = 19;   // GPIO19 (D19) on the DOIT-ESP32-DevKitV1
 const int singleLED = 4;  // GPIO4 (D4) on the DOIT-ESP32-DevKitV1
 const int pirSensor = 18; // GPIO18 (D18) on the DOIT-ESP32-DevKitV1
-const int buzzer = 13; // GPIO13 (D13) on the DOIT-ESP32-DevKitV1
+const int buzzer = 13;    // GPIO13 (D13) on the DOIT-ESP32-DevKitV1
 
 int delayForLed;
 
 // Setting PWM properties for LED brightness control
-const int ledChannel = 0;       // Using PWM channel 0
+const int ledChannel = 0; // Using PWM channel 0
 const int ledFreq = 5000;
 const int ledResolution = 7;
 int brightness = 0;
@@ -507,8 +507,6 @@ void loop()
     // this function will listen for incoming subscribed topic processes and invoke receivedCallback()
     mqttClient.loop();
 
-
-
     // Reading light sensor to off-load the ISR
     lastLightSendorReading = lightSensorRead();
     // we send a reading every 5 sec
@@ -536,17 +534,14 @@ void loop()
         Serial.print("Publishing data:  ");
         Serial.println(JSONmessageBuffer);
         // This prints:
-        // {"name":"kitchen","type":"lights","value":"%d"}, %d - valueof(singleLedDataToSend.c_str());
+        // {"name":"kitchen","type":"movement","value":"%d"}, %d - valueof(singleLedDataToSend.c_str());
         mqttClient.publish((MQTT_TOPIC_NAME + "/singleLED").c_str(), JSONmessageBuffer);
         movementSensed = false;
     }
 
-
-
-
     if (now - lastMsgTimer > 5000)
     {
-        
+
         lastMsgTimer = now;
         /*
         // Getting button1 reading
