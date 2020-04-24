@@ -239,6 +239,11 @@
 				}
 			}
 
+			/*
+			 * Give any data that you wish to test to see if it is a JSON object
+			 * Returns true if the data given is a JSON string or object
+			 * Returns false otherwise
+			 */
 			function isJSON(data){
 				if(typeof data !== "string"){
 					data = JSON.stringify(data);
@@ -280,6 +285,7 @@
 			let socket = new WebSocket("ws://localhost:8888/live");
 
 			socket.onopen = function(e){
+				// Show message on console once the webSocket connection is opened
 				console.log("Connection established");
 			}
 
@@ -295,6 +301,7 @@
 			}
 
 			socket.onclose = function(e){
+				// Log to the console whether or not the close of the webSocket connection was clean
 				if(e.wasClean){
 					console.log("Connection closed cleanly!");
 					console.log("Reason: " + e.reason);
@@ -305,9 +312,14 @@
 			}
 
 			socket.onerror = function(e){
+				// Log to the console any error messages from the webSocket connection
 				console.log("Error: " + e.message);
 			}
 
+			/*
+			 * Called when a change to the light level occurs
+			 * Sends the new light level value to the back-end over the webSocket connection
+			 */
 			function onLightChange(lightName){
 				//let lightName = "lightControl";
 				let outputVal = document.getElementById(lightName).value
@@ -319,6 +331,11 @@
 				};
 				socket.send(JSON.stringify(output));
 			}
+			
+			/*
+			 * Called when a change to the delay time occurs
+			 * Sends the new delay time value to the back-end over the webSocket connection
+			 */
 			function onDelayChange(sliderName, lightName){
 				//let lightName = "lightControl";
 				let outputVal = document.getElementById(sliderName).value
